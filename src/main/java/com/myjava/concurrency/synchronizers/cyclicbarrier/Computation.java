@@ -29,7 +29,7 @@ public class Computation implements Runnable {
 	@Override
 	public void run() {
 		result = param * param;
-		System.out.println(String.format("%s is waiting for other threads", Thread.currentThread().getName()));
+		System.out.println(String.format("%s has finished work", Thread.currentThread().getName()));
 		awaitBarrier();
 		System.out.println(String.format("%s is Finsihed.", Thread.currentThread().getName()));
 	}

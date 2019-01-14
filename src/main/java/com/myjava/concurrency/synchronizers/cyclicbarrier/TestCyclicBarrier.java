@@ -2,7 +2,13 @@ package com.myjava.concurrency.synchronizers.cyclicbarrier;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+/**
+ * @author johnybasha
+ *
+ */
 public class TestCyclicBarrier {
 
 	public static void main(String[] args) {
@@ -10,27 +16,29 @@ public class TestCyclicBarrier {
 		int[] params = new int[] { 2, 4 };
 		Computation comp1 = new Computation(params[0]);
 		Computation comp2 = new Computation(params[1]);
-		CyclicBarrier cyclicBarrier = new CyclicBarrier(3, () -> {
+
+		Runnable barrierAction = () -> {
 			int result = comp1.getResult() + comp2.getResult();
 			System.out.println(String.format("The sum of square root of %s and square root of %s is : %s", params[0],
 					params[1], result));
+		};
 
-		});
+		CyclicBarrier cyclicBarrier = new CyclicBarrier(3, barrierAction);
 
 		comp1.setBarrier(cyclicBarrier);
 		comp2.setBarrier(cyclicBarrier);
 
-		Thread t1 = new Thread(comp1, "T1");
-		Thread t2 = new Thread(comp2, "T2");
-
-		t1.start();
-		t2.start();
-
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		executor.submit(comp1);
+		executor.submit(comp2);
+		
 		try {
 			System.out.println(String.format("%s is waiting for other threads", Thread.currentThread().getName()));
 			cyclicBarrier.await();
 		} catch (InterruptedException | BrokenBarrierException e) {
 			e.printStackTrace();
+		} finally {
+			executor.shutdown();
 		}
 		System.out.println(String.format("%s is Finsihed.", Thread.currentThread().getName()));
 	}
